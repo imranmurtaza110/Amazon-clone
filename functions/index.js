@@ -1,0 +1,32 @@
+// import { parse, stringify, toJSON, fromJSON } from 'flatted';
+// const { parse, stringify, toJSON, fromJSON } = require('flatted');
+
+const functions = require("firebase-functions");
+const express = require("express");
+const cors = require("cors");
+const stripe = require("stripe")('sk_test_51KgCn2FsBxSUbYTNRQsvD4TvolnniINpgdqTsRuKza1W6DDAlGJB7yr9ik0N76Cfs40bTJmh8OwrbUuwOjTITp6500SyUkfH0h')
+
+const app = express();
+app.use(cors({ origin: true }));
+app.use(express.json());
+
+app.get('/', (request, response) => response.status(200).send('hello WOrld'));
+
+app.post('/payments/create', async (request, response) => {
+    const total = request.query.total;
+    // console.log('Hello! payment Request is recieved: ', total)
+
+    const paymentIntent = await stripe.paymentIntents.create({
+        amount: total,
+        currency: "usd",
+    });
+
+    response.status(201).send({
+        clientSecret: paymentIntent.client_secret,
+    })
+})
+
+exports.api = functions.https.onRequest(app)
+
+// Example endpoint 
+// http://localhost:5001/clone-d7879/us-central1/api
